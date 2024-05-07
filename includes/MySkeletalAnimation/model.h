@@ -12,13 +12,11 @@
 #include <assimp/postprocess.h>
 
 #include <string>
-#include <iostream>
 #include <vector>
 #include <map>
 
 #include "MySkeletalAnimation/mesh.h"
 #include "MySkeletalAnimation/bone_info.h"
-#include "MySkeletalAnimation/assimp_glm_helpers.h"
 
 using namespace std;
 

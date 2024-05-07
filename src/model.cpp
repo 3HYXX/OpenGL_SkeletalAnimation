@@ -1,5 +1,6 @@
 #include "MySkeletalAnimation/model.h"
 
+#include "MySkeletalAnimation/assimp_glm_helpers.h"
 #include "MySkeletalAnimation/log.h"
 
 void Model::loadModel(string const &path)

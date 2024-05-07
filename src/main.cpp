@@ -11,7 +11,8 @@
 #include "MySkeletalAnimation/camera.h"
 #include "MySkeletalAnimation/skybox.h"
 
-
+#include "MySkeletalAnimation/animation.h"
+#include "MySkeletalAnimation/animator.h"
 
 #include <iostream>
 
@@ -37,7 +38,7 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-float modelScale = 0.1f;
+float modelScale = 0.5f;
 
 int main()
 {
@@ -86,14 +87,16 @@ int main()
 
 	// build and compile shaders
 	// -------------------------
-	Shader ourShader("shaders/model.vs", "shaders/model.fs");
+	//Shader ourShader("shaders/model.vs", "shaders/model.fs");
+	Shader ourShader("shaders/anim_model.vs", "shaders/anim_model.fs");
 	Shader skyboxShader("shaders/skybox.vs", "shaders/skybox.fs");
 
 	
 	// load models
 	// -----------
 	Model ourModel("resources/objects/Breakdance Uprock Var 2/Breakdance Uprock Var 2.dae");
-
+	Animation danceAnimation("resources/objects/Breakdance Uprock Var 2/Breakdance Uprock Var 2.dae",&ourModel);
+	Animator animator(&danceAnimation);
 	
 	vector<std::string> faces
     {
@@ -126,7 +129,10 @@ int main()
 		// input
 		// -----
 		processInput(window);
-		//animator.UpdateAnimation(deltaTime);
+
+		//update 
+		// ------
+		animator.UpdateAnimation(deltaTime);
 		
 		// render
 		// ------
@@ -142,9 +148,9 @@ int main()
 		ourShader.setMat4("projection", projection);
 		ourShader.setMat4("view", view);
 
-        // auto transforms = animator.GetFinalBoneMatrices();
-		// for (int i = 0; i < transforms.size(); ++i)
-		// 	ourShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
+        auto transforms = animator.GetFinalBoneMatrices();
+		for (int i = 0; i < transforms.size(); ++i)
+			ourShader.setMat4("finalBonesMatrices[" + std::to_string(i) + "]", transforms[i]);
 
 
 		// render the loaded model
