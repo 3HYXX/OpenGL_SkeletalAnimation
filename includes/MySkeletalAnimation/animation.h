@@ -56,6 +56,8 @@ class Animation
         return m_BoneInfoMap;
     }
 
+    glm::mat4 globalInverseTransform;
+
   private:
     void ReadHeirarchyData(AssimpNodeData &dest, const aiNode *src);
     void ReadMissingBones(const aiAnimation *animation, Model &model);

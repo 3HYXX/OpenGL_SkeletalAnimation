@@ -29,7 +29,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 1.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -38,7 +38,7 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-float modelScale = 0.5f;
+float modelScale = 0.015f;
 
 int main()
 {
@@ -92,6 +92,47 @@ int main()
 	Shader skyboxShader("shaders/skybox.vs", "shaders/skybox.fs");
 
 	
+
+	//Ground
+	float surface[] {
+		-1.0f, 0.0f, -1.0f, 
+		 1.0f, 0.0f, -1.0f, 
+		 1.0f, 0.0f, 1.0f,
+		-1.0f,  0.0f, 1.0f
+	};
+
+	unsigned int indices[] = {
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	unsigned int VBO, VAO, EBO;
+
+	glGenVertexArrays(1, &VAO);
+
+	glGenBuffers(1, &VBO);
+
+	glGenBuffers(1, &EBO);
+
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(surface), surface, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+	glEnableVertexAttribArray(0);
+
+
+	Shader groundShader("shaders/ground.vs", "shaders/ground.fs");
+
+	
+
 	// load models
 	// -----------
 	Model ourModel("resources/objects/Breakdance Uprock Var 2/Breakdance Uprock Var 2.dae");
@@ -108,8 +149,18 @@ int main()
         "resources/textures/skybox/back.jpg"
     };
 
+	vector<std::string> faces2
+    {
+        "resources/textures/Yokohama2/posx.jpg",
+		"resources/textures/Yokohama2/negx.jpg",
+        "resources/textures/Yokohama2/posy.jpg",
+        "resources/textures/Yokohama2/negy.jpg",
+        "resources/textures/Yokohama2/posz.jpg",
+        "resources/textures/Yokohama2/negz.jpg",
+    };
 
-    SkyBox skybox(faces);
+
+    SkyBox skybox(faces2);
 	skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
 
@@ -155,10 +206,22 @@ int main()
 
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, -0.4f, 0.0f)); // translate it down so it's at the center of the scene
+		model = glm::translate(model, glm::vec3(0.0f, 0.0, 0.0f)); // translate it down so it's at the center of the scene
 		model = glm::scale(model, glm::vec3(modelScale, modelScale, modelScale));	// it's a bit too big for our scene, so scale it down
 		ourShader.setMat4("model", model);
 		ourModel.Draw(ourShader);
+
+
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(3.0f, 1.0f, 3.0f));
+		//Ground
+		groundShader.use();
+		groundShader.setMat4("projection", projection);
+		groundShader.setMat4("view", view);
+		groundShader.setMat4("model", model);
+
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		//render the skybox
 		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content

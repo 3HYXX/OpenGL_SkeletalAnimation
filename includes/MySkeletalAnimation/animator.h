@@ -1,14 +1,13 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <map>
 #include <vector>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 
 
 #include "MySkeletalAnimation/animation.h"
-#include "MySkeletalAnimation/bone.h"
+
 
 class Animator
 {

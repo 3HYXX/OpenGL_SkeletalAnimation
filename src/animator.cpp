@@ -1,4 +1,7 @@
 #include "MySkeletalAnimation/animator.h"
+#include "glm/ext/matrix_transform.hpp"
+
+
 
 Animator::Animator(Animation *animation)
 {
@@ -26,6 +29,7 @@ void Animator::PlayAnimation(Animation *pAnimation)
     m_CurrentAnimation = pAnimation;
     m_CurrentTime = 0.0f;
 }
+
 void Animator::CalculateBoneTransform(const AssimpNodeData *node, glm::mat4 parentTransform)
 {
     std::string nodeName = node->name;
@@ -41,6 +45,7 @@ void Animator::CalculateBoneTransform(const AssimpNodeData *node, glm::mat4 pare
 
     glm::mat4 globalTransformation = parentTransform * nodeTransform;
 
+
     auto boneInfoMap = m_CurrentAnimation->GetBoneIDMap();
     if (boneInfoMap.find(nodeName) != boneInfoMap.end())
     {
@@ -48,7 +53,7 @@ void Animator::CalculateBoneTransform(const AssimpNodeData *node, glm::mat4 pare
         
         glm::mat4 offset = boneInfoMap[nodeName].offset;
 
-        m_FinalBoneMatrices[index] = globalTransformation * offset;
+        m_FinalBoneMatrices[index] = m_CurrentAnimation->globalInverseTransform * globalTransformation * offset;
     }
 
     for (int i = 0; i < node->childrenCount; i++)

@@ -1,5 +1,7 @@
 #include "MySkeletalAnimation/animation.h"
 
+#include "MySkeletalAnimation/assimp_glm_helpers.h"
+
 Animation::Animation(const std::string &animationPath, Model *model)
 {
     Assimp::Importer importer;
@@ -9,7 +11,7 @@ Animation::Animation(const std::string &animationPath, Model *model)
     m_Duration = animation->mDuration;
     m_TicksPerSecond = animation->mTicksPerSecond;
     aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
-    globalTransformation = globalTransformation.Inverse();
+    globalInverseTransform = AssimpGLMHelpers::ConvertMatrixToGLMFormat(globalTransformation.Inverse());
     ReadHeirarchyData(m_RootAssimpDataNode, scene->mRootNode);
     ReadMissingBones(animation, *model);
 }
