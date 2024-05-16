@@ -1,0 +1,5 @@
+target("imgui_backend")
+    set_kind("static")
+    add_files("imgui_impl_glfw.cpp", "imgui_impl_opengl3.cpp")
+    add_includedirs("$(projectdir)/includes/imgui")
+    add_packages("glfw", "glad", "imgui")
