@@ -2,13 +2,16 @@ add_rules("mode.debug", "mode.release")
 
 set_rundir("$(projectdir)")
 
-add_requires("glad", "glfw", "glm", "stb", "assimp")
+add_requires("glad", "glfw", "glm", "stb", "assimp", "imgui v1.90.6-docking")
+
+includes("imgui_backend")
 
 target("OpenGL_SkeletalAnimation")
     set_kind("binary")
-    add_packages("glad", "glfw", "glm", "stb", "assimp")
-    add_files("src/*.cpp")
+    add_packages("glad", "glfw", "glm", "stb", "assimp", "imgui")
+    add_files("src/**.cpp")
     add_includedirs("includes")
+    add_deps("imgui_backend")
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io

@@ -16,6 +16,10 @@
 
 #include <iostream>
 
+#include "imgui.h"
+#include "Imgui/imgui_impl_glfw.h"
+#include "Imgui/imgui_impl_opengl3.h"
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -40,8 +44,7 @@ float lastFrame = 0.0f;
 
 float modelScale = 0.015f;
 
-// animation
-float blendFactor = 0.5f;
+
 
 int main()
 {
@@ -51,6 +54,8 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	const char* glsl_version = "#version 330";
 
 #ifdef __APPLE__
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -71,7 +76,7 @@ int main()
 	glfwSetScrollCallback(window, scroll_callback);
 
 	// tell GLFW to capture our mouse
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// glad: load all OpenGL function pointers
 	// ---------------------------------------
@@ -80,6 +85,34 @@ int main()
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
+
+	
+
+	// Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+
+	// Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsLight();
+
+	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+    ImGuiStyle& style = ImGui::GetStyle();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        style.WindowRounding = 0.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
+
+	// Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+	
+    ImGui_ImplOpenGL3_Init(glsl_version);
 
 	// tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
 	stbi_set_flip_vertically_on_load(true);
@@ -164,12 +197,18 @@ int main()
     };
 
 
-    SkyBox skybox(faces2);
+	SkyBox skybox(faces);
+    SkyBox skybox2(faces2);
+	
 	skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
 
 	// draw in wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	// animation
+	float blendFactor = 0.5f;
+	bool skyboxFlag = true;
 
 	// render loop
 	// -----------
@@ -185,11 +224,24 @@ int main()
 		// -----
 		processInput(window);
 
+		// start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		{
+			ImGui::Begin("Blend Factor");
+			ImGui::SliderFloat("Blend Factor", &blendFactor, 0.0f, 1.0f);
+			ImGui::Checkbox("Skybox", &skyboxFlag);
+			ImGui::End();
+		}
+
 		//update 
 		// ------
 		//animator.UpdateAnimation(deltaTime);
-		std::cout << "Blend Factor: " << blendFactor << std::endl;
 		animator.BlendTwoAnimations(&walkAnimation, &runningAnimation, blendFactor, deltaTime);
+
+
 		// render
 		// ------
 		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
@@ -235,15 +287,35 @@ int main()
         skyboxShader.setMat4("view", view);
         skyboxShader.setMat4("projection", projection);
         
-        skybox.Draw();
-
+		if(skyboxFlag)
+        	skybox.Draw();
+		else
+		 	skybox2.Draw();
         glDepthFunc(GL_LESS);
+		//skybox end
+
+		// render the GUI
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            GLFWwindow* backup_current_context = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(backup_current_context);
+        }
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	//Imgui Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
 	// glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
@@ -267,15 +339,6 @@ void processInput(GLFWwindow* window)
 		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
-
-	if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-	{
-		blendFactor = glm::min(blendFactor + 0.01f, 1.0f);
-	}
-	if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-	{
-		blendFactor = glm::max(blendFactor - 0.01f, 0.0f);
-	}
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
