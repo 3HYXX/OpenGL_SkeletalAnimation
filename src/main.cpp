@@ -10,6 +10,7 @@
 #include "MySkeletalAnimation/model.h"
 #include "MySkeletalAnimation/shader.h"
 #include "MySkeletalAnimation/skybox.h"
+#include "MySkeletalAnimation/surface.h"
 
 #include "MySkeletalAnimation/animation.h"
 #include "MySkeletalAnimation/animator.h"
@@ -155,7 +156,10 @@ int main()
 
     glEnableVertexAttribArray(0);
 
+    Surface ground("resources/textures/wood.png");
+
     Shader groundShader("shaders/ground.vs", "shaders/ground.fs");
+    groundShader.setInt("ourTexture", 0);
 
     // load models
     // -----------
@@ -207,7 +211,7 @@ int main()
         ImGui::NewFrame();
 
         {
-            ImGui::Begin("Blend Factor");
+            ImGui::Begin("Settings");
             ImGui::SliderFloat("Blend Factor", &blendFactor, 0.0f, 1.0f);
             ImGui::Checkbox("Skybox", &skyboxFlag);
             ImGui::End();
@@ -254,8 +258,12 @@ int main()
         groundShader.setMat4("view", view);
         groundShader.setMat4("model", model);
 
+        /*
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        */
+        ground.Draw();
+        
 
         // render the skybox
         glDepthFunc(
