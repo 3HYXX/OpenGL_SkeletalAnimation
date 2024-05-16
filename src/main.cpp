@@ -40,6 +40,9 @@ float lastFrame = 0.0f;
 
 float modelScale = 0.015f;
 
+// animation
+float blendFactor = 0.5f;
+
 int main()
 {
 	// glfw: initialize and configure
@@ -135,9 +138,10 @@ int main()
 
 	// load models
 	// -----------
-	Model ourModel("resources/objects/Breakdance Uprock Var 2/Breakdance Uprock Var 2.dae");
-	Animation danceAnimation("resources/objects/Breakdance Uprock Var 2/Breakdance Uprock Var 2.dae",&ourModel);
-	Animator animator(&danceAnimation);
+	Model ourModel("resources/objects/Ely By K.Atienza/Ely By K.Atienza.dae");
+	Animation walkAnimation("resources/objects/Ely By K.Atienza/animations/Walking.dae",&ourModel);
+	Animation runningAnimation("resources/objects/Ely By K.Atienza/animations/Running.dae",&ourModel);
+	Animator animator(&walkAnimation);
 	
 	vector<std::string> faces
     {
@@ -183,8 +187,9 @@ int main()
 
 		//update 
 		// ------
-		animator.UpdateAnimation(deltaTime);
-		
+		//animator.UpdateAnimation(deltaTime);
+		std::cout << "Blend Factor: " << blendFactor << std::endl;
+		animator.BlendTwoAnimations(&walkAnimation, &runningAnimation, blendFactor, deltaTime);
 		// render
 		// ------
 		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
@@ -262,6 +267,15 @@ void processInput(GLFWwindow* window)
 		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
+
+	if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		blendFactor = glm::min(blendFactor + 0.01f, 1.0f);
+	}
+	if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		blendFactor = glm::max(blendFactor - 0.01f, 0.0f);
+	}
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

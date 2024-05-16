@@ -2,6 +2,7 @@
 
 /* Container for bone data */
 
+#include "glm/fwd.hpp"
 #include <vector>
 
 #include <assimp/scene.h>
@@ -54,6 +55,11 @@ public:
 
     int GetScaleIndex(float animationTime);
 
+    //change per frame
+    glm::vec3 m_translation;
+    glm::quat m_rotation;
+    glm::vec3 m_scale;
+
 private:
     float GetScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime);
 
@@ -70,7 +76,12 @@ private:
     int m_NumRotations;
     int m_NumScalings;
 
-    glm::mat4 m_LocalTransform;
+    
     std::string m_Name;
     int m_ID;
+
+    //change per frame
+    glm::mat4 m_LocalTransform;
+
+
 };

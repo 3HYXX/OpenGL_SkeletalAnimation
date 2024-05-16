@@ -8,6 +8,8 @@ Animation::Animation(const std::string &animationPath, Model *model)
     const aiScene *scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
     assert(scene && scene->mRootNode);
     auto animation = scene->mAnimations[0];
+    auto animationCount = scene->mNumAnimations;
+    std::cout << "Animation Count: " << animationCount << std::endl;
     m_Duration = animation->mDuration;
     m_TicksPerSecond = animation->mTicksPerSecond;
     aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
